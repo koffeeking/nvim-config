@@ -58,12 +58,13 @@ function M.config()
       diagnostics.stylelint,
 
       -- -- python -- --
-      formatting.isort,
-      formatting.black.with {
-        extra_args = { "--line-length=100" },
-      },
+      -- this is all handled by ruff now
+      -- formatting.black.with {
+      --   extra_args = { "--line-length=100" },
+      -- },
       -- formatting.docformatter,
-      diagnostics.pylint,
+      formatting.isort,
+      diagnostics.mypy,
 
       -- -- code completion -- --
       null_ls.builtins.completion.spell,

@@ -1,7 +1,7 @@
 local M = {
   "folke/which-key.nvim",
   event = "VeryLazy",
-  commit = "ce741eb559c924d72e3a67d2189ad3771a231414",
+  -- commit = "ce741eb559c924d72e3a67d2189ad3771a231414",
 }
 
 function M.config()
@@ -9,7 +9,7 @@ function M.config()
     ["q"] = { "<cmd>confirm q<CR>", "Quit" },
     ["/"] = { "<Plug>(comment_toggle_linewise_current)", "Comment" },
     ["n"] = { "<cmd>nohlsearch<CR>", "No Highlight" },
-    ["e"] = { "<cmd>NvimTreeToggle<CR>", "Explorer" },
+    ["e"] = { "<cmd>lua require'snacks'.explorer.open()<CR>", "Explorer" },
     ["z"] = { "<cmd>ZenMode<cr>", "Zen Mode" },
 
     h = {
@@ -65,7 +65,7 @@ function M.config()
       d = { "<cmd>Lazy debug<cr>", "Debug" },
     },
 
-    r = {"<cmd>lua vim.lsp.buf.rename()<cr>", "Replace"},
+    r = { "<cmd>lua vim.lsp.buf.rename()<cr>", "Replace" },
 
     f = {
       name = "Find",
@@ -88,7 +88,8 @@ function M.config()
 
     g = {
       name = "Git",
-      g = { "<cmd>Neogit<cr>", "Neogit" },
+      -- g = { "<cmd>Neogit<cr>", "Neogit" },
+      g = { "<cmd>lua Snacks.lazygit.open()<CR>", "Lazy Git" },
       j = { "<cmd>lua require 'gitsigns'.next_hunk({navigation_message = false})<cr>", "Next Hunk" },
       k = { "<cmd>lua require 'gitsigns'.prev_hunk({navigation_message = false})<cr>", "Prev Hunk" },
       l = { "<cmd>lua require 'gitsigns'.blame_line()<cr>", "Blame" },

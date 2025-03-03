@@ -10,6 +10,7 @@ local M = {
   },
 }
 
+-- Define key mappings for LSP
 local function lsp_keymaps(bufnr)
   local opts = { noremap = true, silent = true }
   local keymap = vim.api.nvim_buf_set_keymap
@@ -21,10 +22,12 @@ local function lsp_keymaps(bufnr)
   keymap(bufnr, "n", "gl", "<cmd>lua vim.diagnostic.open_float()<CR>", opts)
 end
 
+-- Attach the LSP client to buffer along with keymaps
 M.on_attach = function(client, bufnr)
   lsp_keymaps(bufnr)
 end
 
+-- Setup LSP capabilities, optionally enhanced by nvim-cmp
 function M.common_capabilities()
   local status_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
   if status_ok then
@@ -44,6 +47,7 @@ function M.common_capabilities()
   return capabilities
 end
 
+-- Main LSP configuration function
 function M.config()
   local lspconfig = require "lspconfig"
   local icons = require "user.icons"
@@ -54,9 +58,8 @@ function M.config()
     "gopls",
     "rust_analyzer",
     "html",
-    "tsserver",
+    "ts_ls",
     "astro",
-    "pyright",
     "bashls",
     "jsonls",
     "yamlls",
@@ -98,10 +101,14 @@ function M.config()
   vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = "rounded" })
   require("lspconfig.ui.windows").default_options.border = "rounded"
 
+  -- Temporary local scopes for capabilities and on_attach inside config
+  local capabilities = M.common_capabilities()
+  local on_attach = M.on_attach
+
   for _, server in pairs(servers) do
     local opts = {
-      on_attach = M.on_attach,
-      capabilities = M.common_capabilities(),
+      on_attach = on_attach,
+      capabilities = capabilities,
     }
 
     local require_ok, settings = pcall(require, "user.lspsettings." .. server)
@@ -115,6 +122,45 @@ function M.config()
 
     lspconfig[server].setup(opts)
   end
+
+  -- ruff configuration
+  lspconfig.ruff.setup {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    init_options = {
+      settings = {
+        lineLength = 120,
+        organizeImports = true,
+        showSyntaxErrors = true,
+        exclude = {
+          "**/node_modules",
+          "**/__pycache__",
+          ".*",
+          "bazel-*/**",
+        },
+      },
+    },
+  }
+  -- Autocommand to disable ruff's hover in favor of jedi_language_server's hover
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = vim.api.nvim_create_augroup("lsp_attach_disable_ruff_hover", { clear = true }),
+    callback = function(args)
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      if client and client.name == "ruff" then
+        client.server_capabilities.hoverProvider = false
+      end
+    end,
+    desc = "LSP: Disable hover capability from Ruff",
+  })
+
+  -- jedi_language_server configuration
+  lspconfig.jedi_language_server.setup {
+    capabilities = capabilities,
+    on_attach = on_attach,
+    init_options = {
+      diagnostics = { enable = false },
+    },
+  }
 end
 
 return M
